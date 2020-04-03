@@ -1,13 +1,30 @@
+language: generic
 sudo: required
 
 services:
   - docker
 
 before_install:
-  - docker build -t rohitsinghcbr/multi-container-app -f Dockerfile.dev .
+  - docker build -t rohitsinghcbr/multi-container-app -f ./client/Dockerfile.dev ./client
 
 script:
   - docker run -e CI=true rohitsinghcbr/multi-container-app npm run test
+
+after_success:
+  - docker build -t rohitsinghcbr/multi-client ./client
+  - docker build -t rohitsinghcbr/multi-nginx ./nginx
+  - docker build -t rohitsinghcbr/multi-server ./server
+  - docker build -t rohitsinghcbr/multi-worker ./worker
+
+#Login to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+#Take these images and push them to docker hub
+  - docker push rohitsinghcbr/multi-client
+  - docker push rohitsinghcbr/multi-nginx
+  - docker push rohitsinghcbr/multi-server
+  - docker push rohitsinghcbr/multi-worker
+
 
 deploy:
   provider: elasticbeanstalk
