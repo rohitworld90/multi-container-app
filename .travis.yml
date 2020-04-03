@@ -1,0 +1,23 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t rohitsinghcbr/multi-container-app -f Dockerfile.dev .
+
+script:
+  - docker run -e CI=true rohitsinghcbr/multi-container-app npm run test
+
+deploy:
+  provider: elasticbeanstalk
+  region: "ap-south-1"
+  app: "multi-container-app"
+  env: "DockerReact-env"
+  bucket_name: "elasticbeanstalk-ap-south-1-532975703910"
+  bucket_path: "multi-container-app"
+  on:
+    branch: master
+
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
